@@ -15,7 +15,9 @@ public class SearchEmployee {
                 System.out.println("4. Search by SSN");
                 System.out.println("5. Update Employee Information");
                 System.out.println("6. Insert New Employee");
-                System.out.println("7. Exit");
+                System.out.println("7. Delete Employee");
+                System.out.println("8. Update Salary by Percentage Range");
+                System.out.println("9. Exit");
                 System.out.print("Enter your choice: ");
 
                 choice = input.nextInt();
@@ -54,15 +56,22 @@ public class SearchEmployee {
                     case 6:
                         insertEmployee(input);
                         break;
-
                     case 7:
+                        deleteEmployee(input);
+                        break;
+
+                    case 8:
+                        updateSalaryByRange(input);
+                        break;
+
+                    case 9:
                         System.out.println("Exiting program.");
                         break;
 
                     default:
                         System.out.println("Invalid choice. Please try again.");
                 }
-            } while (choice != 7);
+            } while (choice != 9);
         }
     }
 
@@ -191,6 +200,74 @@ public class SearchEmployee {
             System.out.println("New employee inserted successfully.");
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Employee ID already exists. Please use a different empid.");
+        } catch (Exception e) {
+            System.out.println("Database Error: " + e.getMessage());
+        }
+    }
+
+    private static void deleteEmployee(Scanner input) {
+        System.out.print("Enter Employee ID to delete: ");
+        int empid = input.nextInt();
+        input.nextLine();
+
+        String sql = "DELETE FROM employees WHERE empid = ?";
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            if (conn == null) {
+                System.out.println("Unable to connect to the database.");
+                return;
+            }
+
+            stmt.setInt(1, empid);
+
+            int rowsDeleted = stmt.executeUpdate();
+
+            if (rowsDeleted > 0) {
+                System.out.println("Employee deleted successfully.");
+            } else {
+                System.out.println("Employee not found.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Database Error: " + e.getMessage());
+        }
+    }
+
+    private static void updateSalaryByRange(Scanner input) {
+        System.out.print("Enter minimum salary: ");
+        double minSalary = input.nextDouble();
+
+        System.out.print("Enter maximum salary: ");
+        double maxSalary = input.nextDouble();
+
+        System.out.print("Enter percentage increase: ");
+        double percentIncrease = input.nextDouble();
+        input.nextLine();
+
+        String sql = "UPDATE employees " +
+                     "SET Salary = Salary + (Salary * ? / 100) " +
+                     "WHERE Salary >= ? AND Salary < ?";
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            if (conn == null) {
+                System.out.println("Unable to connect to the database.");
+                return;
+            }
+
+            stmt.setDouble(1, percentIncrease);
+            stmt.setDouble(2, minSalary);
+            stmt.setDouble(3, maxSalary);
+
+            int rowsUpdated = stmt.executeUpdate();
+
+            System.out.println(rowsUpdated + " employee salary record(s) updated successfully.");
+
         } catch (Exception e) {
             System.out.println("Database Error: " + e.getMessage());
         }
