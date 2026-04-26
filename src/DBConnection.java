@@ -8,9 +8,9 @@ public class DBConnection {
 
         try {
             conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/employeedata3",
+                "jdbc:mysql://localhost:3308/employeedata3",
                 "root",
-                "YOUR-MYSQL_PASSWORD"
+                "2350123501Wa&"
             );
 
             System.out.println("Database connected successfully.");
